@@ -1,0 +1,5 @@
+#lang racket
+
+(define out-port (open-output-file "/teste.txt"))
+(displayln "Hello World" out-port)
+(close-output-port out-port)
