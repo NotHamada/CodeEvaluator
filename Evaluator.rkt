@@ -31,17 +31,31 @@
 (displayln (count-lines-in-file file-path))
 
 (define (identify-functions stx)
+  (define line-counter 0) ; Initialize line counter
+
+  (define (count-lines stx)
+    (syntax-parse stx
+      [(? identifier?)
+       (set! line-counter (add1 line-counter))
+       #'stx]
+      [else
+       (syntax-case stx ()
+         [(_ . _)
+          (set! line-counter (add1 line-counter))
+          (syntax/loc stx #'(begin . _))]
+         [_ stx])]))
+
   (syntax-parse stx
     [(_ (define (name args ...) body ...))
-     (displayln (format "Function found: ~a" #'name))]
+     (let ((body-stx (count-lines #'(body ...))))
+       (displayln (format "Function found: ~a" #'name))
+       (displayln (format "Number of lines in the function: ~a" line-counter))
+       #'(define (name args ...) body-stx))]
     [(_ (define name expr))
-     (cond
-       [(and (identifier? #'name) (expression? #'expr))
-        (displayln (format "Variable found: ~a" #'name))]
-       [else #f])]
-     )
+     (displayln (format "Variable found: ~a" #'name))
+     #'(define name expr)]
     [(_ _ ...)
-     #f]) ; Ignore other expressions
+     #f])) ; Ignore other expressions
 
 (define (parse-file file-path)
   (define input-port (open-input-file file-path))
@@ -52,6 +66,5 @@
       [else
        (identify-functions stx)
        (loop)])))
-
 ; Example usage
 (parse-file "teste.rkt")
