@@ -1,0 +1,29 @@
+#lang racket
+
+(define (count-char-occurrences char str)
+  (define (count-helper char str count)
+    (cond
+      [(= (string-length str) 0) count]
+      [(char=? (string-ref str 0) char) (count-helper char (substring str 1) (+ count 1))]
+      [else (count-helper char (substring str 1) count)]))
+
+  (count-helper char str 0))
+
+(define (identify-functions-and-variables file-path char-to-count)
+  (define input-port (open-input-file file-path))
+
+  (let loop ((line-number 1)
+             (line (read-line input-port)))
+    (cond
+      [(eof-object? line)
+       (close-input-port input-port)]
+      [else
+       (let* ((line-char-count (count-char-occurrences char-to-count line)))
+         (displayln (format "Line ~a: Char ~a" line-number line-char-count)))
+       (loop (add1 line-number) (read-line input-port))])))
+
+; Example usage
+(define file-path "example.rkt")
+(define char-to-count #\o)
+
+(identify-functions-and-variables file-path char-to-count)
