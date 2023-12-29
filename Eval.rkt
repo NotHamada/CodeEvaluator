@@ -32,9 +32,6 @@
   (count-char-occurrences #\) line)
   )
 
-(define (count-hash line)
-  (count-char-occurrences #\# line))
-
 (define (identify-functions-and-variables file-path)
   (define input-port (open-input-file file-path))
 
@@ -46,7 +43,7 @@
     (cond
       [(eof-object? line)
        (close-input-port input-port)]
-      [(or (is-empty-line? line) (< 0 (count-hash line)))
+      [(or (is-empty-line? line) (= 1 line-number))
        (loop (add1 line-number) function-lines open-parentesis close-parentesis (read-line input-port))]
       [else
        (let* (
