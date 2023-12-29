@@ -1,5 +1,7 @@
 #lang racket
 
+(define grade 0)
+
 (define (trim-whitespace str)
   (define (is-whitespace? c)
     (char-whitespace? c))
@@ -32,6 +34,10 @@
   (count-char-occurrences #\) line)
   )
 
+(define (verify-comment line)
+  (count-char-occurrences #\; line)
+  )
+
 (define (identify-functions-and-variables file-path)
   (define input-port (open-input-file file-path))
 
@@ -39,12 +45,16 @@
              (function-lines 0)
              (open-parentesis 0)
              (close-parentesis 0)
+             (comments 0)
              (line (read-line input-port)))
     (cond
       [(eof-object? line)
-       (close-input-port input-port)]
+       (close-input-port input-port)
+       (displayln comments)]
       [(or (is-empty-line? line) (= 1 line-number))
-       (loop (add1 line-number) function-lines open-parentesis close-parentesis (read-line input-port))]
+       (loop (add1 line-number) function-lines open-parentesis close-parentesis comments (read-line input-port))]
+      [(= 1 (verify-comment line)) 
+       (loop (add1 line-number) function-lines open-parentesis close-parentesis (add1 comments) (read-line input-port))]
       [else
        (let* (
               (new-open-parentesis (+ open-parentesis (count-open-parentesis line)))
@@ -52,9 +62,9 @@
               )
          (when (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis))
            (displayln (format "Line ~a: Function Lines ~a" line-number (if (zero? function-lines) 1 function-lines)))
-           (loop (add1 line-number) 0 0 0 (read-line input-port))
+           (loop (add1 line-number) 0 0 0 comments (read-line input-port))
            )
-         (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis (read-line input-port)))])))
+         (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments (read-line input-port)))])))
 
 ; Example usage
 (define file-path "teste.rkt")
