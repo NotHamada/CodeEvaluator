@@ -11,3 +11,9 @@
     (regexp-replace* #rx"\\s+$" str ""))
 
   (trim-end (trim-start str)))
+
+;
+;
+;
+;
+;

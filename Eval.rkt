@@ -38,6 +38,15 @@
   (count-char-occurrences #\; line)
   )
 
+(define (calculate lst)
+  (displayln (car (cdr lst)))
+)
+
+; Exemplo de acesso aos itens da lista: (car lst) acessa o primeiro item
+; Exemplo de acesso aos itens da lista: (car (cdr lst)) acessa o segundo item
+; Exemplo de acesso aos itens da lista: (car (cddr lst)) acessa o terceiro item
+
+
 (define (identify-functions-and-variables file-path)
   (define input-port (open-input-file file-path))
 
@@ -50,7 +59,7 @@
     (cond
       [(eof-object? line)
        (close-input-port input-port)
-       (displayln comments)]
+       (calculate (list comments line-number))]
       [(or (is-empty-line? line) (= 1 line-number))
        (loop (add1 line-number) function-lines open-parentesis close-parentesis comments (read-line input-port))]
       [(= 1 (verify-comment line)) 
