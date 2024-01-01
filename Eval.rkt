@@ -40,6 +40,7 @@
 
 (define (calculate lst)
   (displayln (car (cdr lst)))
+  (displayln (car (cddr lst)))
 )
 
 ; Exemplo de acesso aos itens da lista: (car lst) acessa o primeiro item
@@ -55,15 +56,16 @@
              (open-parentesis 0)
              (close-parentesis 0)
              (comments 0)
+             (number-of-functions 0)
              (line (read-line input-port)))
     (cond
       [(eof-object? line)
        (close-input-port input-port)
-       (calculate (list comments line-number))]
+       (calculate (list comments line-number number-of-functions))]
       [(or (is-empty-line? line) (= 1 line-number))
-       (loop (add1 line-number) function-lines open-parentesis close-parentesis comments (read-line input-port))]
+       (loop (add1 line-number) function-lines open-parentesis close-parentesis comments number-of-functions (read-line input-port))]
       [(= 1 (verify-comment line)) 
-       (loop (add1 line-number) function-lines open-parentesis close-parentesis (add1 comments) (read-line input-port))]
+       (loop (add1 line-number) function-lines open-parentesis close-parentesis (add1 comments) number-of-functions (read-line input-port))]
       [else
        (let* (
               (new-open-parentesis (+ open-parentesis (count-open-parentesis line)))
@@ -71,9 +73,9 @@
               )
          (when (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis))
            (displayln (format "Line ~a: Function Lines ~a" line-number (if (zero? function-lines) 1 function-lines)))
-           (loop (add1 line-number) 0 0 0 comments (read-line input-port))
+           (loop (add1 line-number) 0 0 0 comments (add1 number-of-functions) (read-line input-port))
            )
-         (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments (read-line input-port)))])))
+         (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments number-of-functions (read-line input-port)))])))
 
 ; Example usage
 (define file-path "teste.rkt")
