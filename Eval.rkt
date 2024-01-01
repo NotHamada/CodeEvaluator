@@ -72,6 +72,7 @@
               (new-close-parentesis (+ close-parentesis (count-close-parentesis line)))
               )
          (when (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis))
+           ; Achar um jeito de identificar variavel: quando open-parentesis é 1 e close-parentesis é 1 
            (displayln (format "Line ~a: Function Lines ~a" line-number (if (zero? function-lines) 1 function-lines)))
            (loop (add1 line-number) 0 0 0 comments (add1 number-of-functions) (read-line input-port))
            )
