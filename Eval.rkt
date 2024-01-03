@@ -1,15 +1,9 @@
 #lang racket
 
 (define (trim-whitespace str)
-  (define (is-whitespace? c)
-    (char-whitespace? c))
-  
-  (define (trim-start str)
-    (regexp-replace* #rx"^\\s+" str ""))
-
-  (define (trim-end str)
-    (regexp-replace* #rx"\\s+$" str ""))
-
+  (define (is-whitespace? c) (char-whitespace? c))
+  (define (trim-start str) (regexp-replace* #rx"^\\s+" str ""))
+  (define (trim-end str) (regexp-replace* #rx"\\s+$" str ""))
   (trim-end (trim-start str)))
 
 (define (is-empty-line? line)
@@ -35,6 +29,10 @@
 (define (verify-comment line)
   (count-char-occurrences #\; line)
   )
+
+(define (is-first-char? str)
+  (and (not (string=? str ""))
+       (char=? (string-ref str 0) #\; )))
 
 (define (calculate lst)
   (define grade 0)
@@ -80,7 +78,7 @@
        ]
       [(or (is-empty-line? line) (= 1 line-number))
        (loop (add1 line-number) function-lines open-parentesis close-parentesis comments number-of-functions sum-function-lines variables (read-line input-port))]
-      [(= 1 (verify-comment line)) 
+      [(and (= 1 (verify-comment line)) (is-first-char? line)) 
        (loop (add1 line-number) function-lines open-parentesis close-parentesis (add1 comments) number-of-functions sum-function-lines variables (read-line input-port))]
       [else
        (let* (

@@ -1,25 +1,12 @@
 #lang racket
 
-(define testa 1)
-(define teste 1)
-(define testi 1)
-(define testo 1)
-(define testu 1)
+(define (is-first-char? str char)
+  (and (not (string=? str ""))
+       (char=? (string-ref str 0) char)))
 
-(define (trim-whitespace str)
-  (define (is-whitespace? c)
-    (char-whitespace? c))
-  
-  (define (trim-start str)
-    (regexp-replace* #rx"^\\s+" str ""))
+; Example usage
+(define my-string "hello")
 
-  (define (trim-end str)
-    (regexp-replace* #rx"\\s+$" str ""))
-
-  (trim-end (trim-start str)))
-
-;
-;
-;
-;
-;
+(if (is-first-char? my-string #\h)
+    (displayln "The first character is 'h;'")
+    (displayln "The first character is not 'h'"))
