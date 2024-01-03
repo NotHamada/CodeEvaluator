@@ -38,9 +38,12 @@
   (count-char-occurrences #\; line)
   )
 
+(define (average-comments total-comments)
+  (displayln (+ total-comments 1)))
+
 (define (calculate lst)
   (displayln (car (cdr lst)))
-  (displayln (car (cddr lst)))
+  (average-comments (car lst))
 )
 
 ; Exemplo de acesso aos itens da lista: (car lst) acessa o primeiro item
@@ -61,7 +64,8 @@
     (cond
       [(eof-object? line)
        (close-input-port input-port)
-       (calculate (list comments line-number number-of-functions))]
+       (calculate (list comments line-number number-of-functions))
+       ]
       [(or (is-empty-line? line) (= 1 line-number))
        (loop (add1 line-number) function-lines open-parentesis close-parentesis comments number-of-functions (read-line input-port))]
       [(= 1 (verify-comment line)) 
