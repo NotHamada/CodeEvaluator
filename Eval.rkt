@@ -1,5 +1,12 @@
 #lang racket
 
+(require srfi/13)
+
+(define final-grade 0)
+(define directory-path "/home/mt_hamada/Workspace/CodeEvaluator/Testes")
+(define file-list (directory-list directory-path))
+(define racket-files (filter (lambda (file) (string-suffix? ".rkt" file)) file-list))
+
 (define (trim-whitespace str)
   (define (is-whitespace? c) (char-whitespace? c))
   (define (trim-start str) (regexp-replace* #rx"^\\s+" str ""))
@@ -30,11 +37,117 @@
   (count-char-occurrences #\; line)
   )
 
-(define (print-list lst)
-  (for-each
-   (lambda (item)
-     (displayln (format "Function lines: ~a" item)))
-   lst))
+(define (table-comments)
+  (displayln "Grading comments table:")
+  (displayln "5: 20% - 24%")
+  (displayln "4: 15% - 19% or 25% - 29%")
+  (displayln "3: 10% - 14% or 30% - 34%")
+  (displayln "2:  5% -  9% or 35% - 39%")
+  (displayln "1:  0% -  4% or 40+%")
+  )
+
+(define (table-cohesion)
+  (displayln "Grading cohesion table:")
+  (displayln "5: 80% - 100%")
+  (displayln "4: 60% - 79%")
+  (displayln "3: 40% - 59%")
+  (displayln "2: 20% - 39%")
+  (displayln "1:  0% - 19%")
+  )
+
+(define (comments-grade comments lines)
+  (define grade 0)
+  (define percentage-lines (exact->inexact (* 100 (/ comments lines))))
+  (define percentage-comments (- 100 (- 100 percentage-lines)))
+
+  (newline)
+
+  (displayln "- Comments grading -")
+  (displayln "Formula for the calculation: comments / total lines of file" )
+  (displayln (format "= ~a / ~a" comments lines))
+  (displayln (format "= ~a" (exact->inexact (/ comments lines))))
+  (displayln (format "= ~a %" percentage-comments))
+
+  (newline)
+
+  (table-comments)
+
+  (cond
+    [(and (>= percentage-comments 20) (< percentage-comments 25))
+      (set! grade 5)]
+    [(and (>= percentage-comments 15) (< percentage-comments 20) (>= percentage-comments 25) (< percentage-comments 30))
+      (set! grade 4)]
+    [(and (>= percentage-comments 10) (< percentage-comments 15) (>= percentage-comments 30) (< percentage-comments 35))
+      (set! grade 3)]
+    [(and (>= percentage-comments 5) (< percentage-comments 10) (>= percentage-comments 35) (< percentage-comments 40))
+      (set! grade 2)]
+    [else
+      (set! grade 1)]
+  )
+
+  (displayln (format "Comments grade: ~a of 5" grade))
+  (set! final-grade (+ final-grade grade))
+)
+
+(define (cohesion-grade lst-functions average-lines)
+  (define interval (ceiling average-lines))
+  (define max-value (apply max lst-functions))
+  (define min-value (apply min lst-functions))
+  (define limits (+ interval (/ (+ min-value max-value) 2)))
+  
+  (newline)
+
+  (displayln "- Cohesion grading -")
+  (displayln "Formula for the calculation: average lines by function + ((biggest function + smallest function) / 2)")
+  (displayln "and")
+  (displayln "((biggest function + smallest function) / 2) - average lines by function")
+  (displayln (format "= ~a + ((~a + ~a) / 2)  " interval max-value min-value))
+  (displayln (format "= ~a + ~a" interval (/ (+ max-value min-value) 2)))
+  (displayln (format "= [~a; ~a]" (- limits interval) limits))
+
+  (newline)
+
+  (displayln "To reach the percentages, we get the functions there are in the interval.")
+  (displayln "Then we do: number of (cohesive functions / total functions) * 100")
+
+  (newline)
+
+  (let ((cohesive-functions 0)
+        (grade 0))
+    (display "Function lines: ")
+    (for-each
+    (lambda (item)
+      (display (format "~a " item))
+      (cond
+        [(and (>= item (- limits interval)) (<= item limits))
+          (set! cohesive-functions (+ cohesive-functions 1))]
+        ))
+    lst-functions)
+
+    (define percentage-cohesion (exact->inexact (* 100 (/ cohesive-functions (length lst-functions)))))
+
+    (newline)
+
+    (displayln (format "Number of cohesive functions: ~a" cohesive-functions))
+    (displayln (format "Percentage: ~a / ~a = ~a %" cohesive-functions (length lst-functions) percentage-cohesion))
+    
+    (cond
+      [(and (>= percentage-cohesion 80))
+        (set! grade 5)]
+      [(and (>= percentage-cohesion 60) (< percentage-cohesion 80))
+        (set! grade 4)]
+      [(and (>= percentage-cohesion 40) (< percentage-cohesion 60))
+        (set! grade 3)]
+      [(and (>= percentage-cohesion 20) (< percentage-cohesion 40))
+        (set! grade 2)]
+      [else (set! grade 1)]
+      )
+
+    (table-cohesion)
+    (displayln (format "Cohesion grade: ~a of 5" grade))
+    (set! final-grade (+ final-grade grade))
+  )
+)
 
 (define (calculate lst)
   (define grade 0)
@@ -44,15 +157,20 @@
   (define sum-function-lines (car (cdddr lst)))
   (define variables (car (cddddr lst)))
   (define lst-functions (car (cdr (cddddr lst))))
-  (define average (exact->inexact (/ sum-function-lines functions)))
+  (define average-lines (exact->inexact (/ sum-function-lines functions)))
 
-  (displayln (format "Average lines per function: ~a" average))
+  (displayln (format "Average lines per function: ~a" average-lines))
   (displayln (format "Variables and calls: ~a" variables))
   (displayln (format "Comments: ~a" comments))
   (displayln (format "Total lines: ~a" lines))
   (displayln (format "Total functions: ~a" functions))
 
-  (print-list lst-functions)
+  (comments-grade comments lines)
+  (cohesion-grade lst-functions average-lines)
+
+  (newline)
+
+  (displayln (format "Grade: ~a / 10" final-grade))
 )
 
 (define (identify-functions-and-variables file-path)
