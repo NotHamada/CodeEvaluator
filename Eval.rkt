@@ -3,26 +3,6 @@
 (require srfi/13)
 
 (define final-grade 0)
-;;; (define directory-path "/home/mt_hamada/Workspace/CodeEvaluator/Testes")
-;;; (define file-list (directory-list directory-path))
-;;; (define racket-files
-;;;   (filter (lambda (file)
-;;;             (and (string? file) ; Check if it's a string
-;;;                  (string-suffix? ".rkt" file)))
-;;;           file-list))
-
-;;; (for-each
-;;;  (lambda (file)
-;;;    (define file-path (build-path directory-path file))
-;;;    (define file-contents
-;;;      (call-with-input-file file-path
-;;;        (lambda (in)
-;;;          (port->string in))))
-;;;    (displayln (format "Contents of ~a:" file))
-;;;    (displayln file-contents)
-;;;    (newline))
-;;;  racket-files)
-
 
 (define (trim-whitespace str)
   (define (is-whitespace? c) (char-whitespace? c))
@@ -230,6 +210,12 @@
            )
          (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments number-of-functions sum-function-lines variables lst-function-lines (read-line input-port)))])))
 
-(define file-path "teste.rkt")
+(define directory-path "/home/mt_hamada/Workspace/CodeEvaluator/Testes")
+(define file-list (directory-list directory-path))
 
-(identify-functions-and-variables file-path)
+(for-each
+ (lambda (file)
+   (define file-path (build-path directory-path file))
+   (identify-functions-and-variables file-path)
+   (newline))
+ file-list)
