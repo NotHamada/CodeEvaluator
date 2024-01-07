@@ -3,26 +3,6 @@
 (require srfi/13)
 
 (define final-grade 0)
-;;; (define directory-path "/home/mt_hamada/Workspace/CodeEvaluator/Testes")
-;;; (define file-list (directory-list directory-path))
-;;; (define racket-files
-;;;   (filter (lambda (file)
-;;;             (and (string? file) ; Check if it's a string
-;;;                  (string-suffix? ".rkt" file)))
-;;;           file-list))
-
-;;; (for-each
-;;;  (lambda (file)
-;;;    (define file-path (build-path directory-path file))
-;;;    (define file-contents
-;;;      (call-with-input-file file-path
-;;;        (lambda (in)
-;;;          (port->string in))))
-;;;    (displayln (format "Contents of ~a:" file))
-;;;    (displayln file-contents)
-;;;    (newline))
-;;;  racket-files)
-
 
 (define (trim-whitespace str)
   (define (is-whitespace? c) (char-whitespace? c))
@@ -51,7 +31,7 @@
   )
 
 (define (verify-comment line)
-  (count-char-occurrences #\; line)
+  (if (count-char-occurrences #\; line) 1 0)
   )
 
 (define (table-comments)
@@ -61,7 +41,7 @@
   (displayln "3: 10% - 14% or 30% - 34%")
   (displayln "2:  5% -  9% or 35% - 39%")
   (displayln "1:  0% -  4% or 40+%")
-  )
+)
 
 (define (table-cohesion)
   (displayln "Grading cohesion table:")
@@ -192,7 +172,6 @@
 
 (define (identify-functions-and-variables file-path)
   (define input-port (open-input-file file-path))
-
   (let loop ((line-number 1)
              (function-lines 0)
              (open-parentesis 0)
@@ -206,30 +185,41 @@
     (cond
       [(and (eof-object? line) (< 0 close-parentesis))
         (displayln "Code has wrong syntasis! Final grade is 0!")
-        (exit)
       ]
       [(eof-object? line)
        (close-input-port input-port)
        (calculate (list comments line-number number-of-functions sum-function-lines variables lst-function-lines))
-       (exit)
-       ]
+      ]
       [(is-empty-line? line)
        (loop line-number function-lines open-parentesis close-parentesis comments number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))]
-      [(and (<= 1 (verify-comment line))) 
-       (loop (add1 line-number) function-lines open-parentesis close-parentesis (add1 comments) number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))]
-      [else
-       (let* (
+      [(not (eq? line (current-input-port)))
+       (let (
               (new-open-parentesis (+ open-parentesis (count-open-parentesis line)))
               (new-close-parentesis (+ close-parentesis (count-close-parentesis line)))
+              (has-comments (verify-comment line))
               )
-         (when (and (= new-open-parentesis new-close-parentesis) (= function-lines 0))
-           (loop (add1 line-number) 0 0 0 comments number-of-functions sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
-           )
-         (when (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis))
-           (loop (add1 line-number) 0 0 0 comments (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
-           )
-         (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments number-of-functions sum-function-lines variables lst-function-lines (read-line input-port)))])))
+              (cond
+              [(and (= new-open-parentesis new-close-parentesis) (= function-lines 0))
+                (loop (add1 line-number) 0 0 0 (+ comments has-comments) number-of-functions sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
+              ]
+              [(and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis) (< 0 function-lines))
+                (loop (add1 line-number) 0 0 0 comments (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
+              ]
+              [(not (and (and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis))))
+                (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))
+              ]
+              ))])))
 
-(define file-path "teste.rkt")
+; Defining directory that coatains the .rkt files
+(define directory-path "/home/mt_hamada/Workspace/CodeEvaluator/Testes")
+; Get the files that contains .rkt
+(define file-list (directory-list directory-path))
 
-(identify-functions-and-variables file-path)
+; Get the list and do the process one by one
+(for-each
+ (lambda (file)
+   (set! final-grade 0)
+   (define file-path (build-path directory-path file))
+   (identify-functions-and-variables file-path)
+   (newline))
+ file-list)
