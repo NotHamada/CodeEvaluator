@@ -204,10 +204,10 @@
                 (loop (add1 line-number) 0 0 0 (+ comments has-comments) number-of-functions sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
               ]
               [(and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis) (< 0 function-lines))
-                (loop (add1 line-number) 0 0 0 comments (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
+                (loop (add1 line-number) 0 0 0 (+ comments has-comments) (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
               ]
               [(not (or (and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis))))
-                (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis comments number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))
+                (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis (+ comments has-comments) number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))
               ]
               ))])))
 
