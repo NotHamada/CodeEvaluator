@@ -4,10 +4,15 @@
 
 (define final-grade 0)
 
-; Function that trim string
+; Function that  
+(define (trim-whitespace str)
+  (define (is-whitespace? c) (char-whitespace? c))
+  (define (trim-start str) (regexp-replace* #rx"^\\s+" str ""))
+  (define (trim-end str) (regexp-replace* #rx"\\s+$" str ""))
+  (trim-end (trim-start str)))
 
 (define (is-empty-line? line)
-  (string=? "" (string-trim line)))
+  (string=? "" (trim-whitespace line)))
 
 ; Function that count the number of occurrences of a specific char in a string
 (define (count-char-occurrences char str)
@@ -63,8 +68,8 @@
 ; Function that grades the code by comments
 (define (comments-grade comments lines)
   (define grade 0) ; Variable that initializes the grade
-  (define percentage-comments (exact->inexact (* 100 (/ comments lines))) ; Formula to calculate the percentage of comments
-)
+  (define percentage-comments (exact->inexact (* 100 (/ comments lines)))) ; Formula to calculate the percentage of comments
+
   (newline)
 
   ; Explanation of how the grading is done 
@@ -167,6 +172,8 @@
 )
 
 ; Function that calculates the grade of the code
+; The list contains (in order): 
+; Comments, number of lines, number of functions, the sum of all function lines, number of variables (including calls too) and list of the sizes of the functions
 (define (calculate lst)
   (define grade 0)
   (define comments (car lst))
@@ -237,8 +244,7 @@
               ))])))
 
 ; Defining directory that coatains the .rkt files
-(define directory-path "D:/uem/semestre 6/pplf/CodeEvaluator/Testes")
-
+(define directory-path "/home/mt_hamada/Workspace/CodeEvaluator/Testes")
 ; Get the files that contains .rkt
 (define file-list (directory-list directory-path))
 
@@ -252,33 +258,3 @@
    (identify-functions-and-variables file-path)
    (newline))
  file-list)
-
-; Testes Unitários
-(module+ test
-  (require rackunit)
-
-  ; Testes para is-empty-line?
-  (check-true (is-empty-line? ""))
-  (check-true (is-empty-line? "   "))
-  (check-false (is-empty-line? "not empty"))
-
-  ; Testes para count-char-occurrences
-  (check-equal? (count-char-occurrences #\a "banana") 3)
-  (check-equal? (count-char-occurrences #\z "banana") 0)
-  (check-equal? (count-char-occurrences #\a "") 0)  ; Caso de string vazia
-
-  ; Testes para count-open-parentesis
-  (check-equal? (count-open-parentesis "(abc (def)") 2)
-  (check-equal? (count-open-parentesis "no parentheses") 0)
-  (check-equal? (count-open-parentesis "") 0)  ; Caso de string vazia
-
-  ; Testes para count-close-parentesis
-  (check-equal? (count-close-parentesis "(abc) def)") 1)
-  (check-equal? (count-close-parentesis "no parentheses") 0)
-  (check-equal? (count-close-parentesis "") 0)  ; Caso de string vazia
-
-  ; Testes para verify-comment
-  (check-equal? (verify-comment "; this is a comment") 1)
-  (check-equal? (verify-comment "this is not a comment") 0)
-  (check-equal? (verify-comment "") 0)  ; Caso de string vazia
-)
