@@ -237,7 +237,7 @@
               ))])))
 
 ; Defining directory that coatains the .rkt files
-(define directory-path "D:/uem/semestre 6/pplf/CodeEvaluator/Testes")
+(define directory-path "Testes")
 
 ; Get the files that contains .rkt
 (define file-list (directory-list directory-path))
