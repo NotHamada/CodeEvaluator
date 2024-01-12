@@ -9,6 +9,9 @@
 (define (is-empty-line? line)
   (string=? "" (string-trim line)))
 
+(define (identify-tests line)
+  (if (string-contains? line "check-") 1 0))
+
 ; Function that count the number of occurrences of a specific char in a string
 (define (count-char-occurrences char str)
   (define (count-helper char str count) ; Variable that has the number of occurrences of the char
@@ -99,21 +102,16 @@
 ; Function that grades the code by cohesion
 (define (cohesion-grade lst-functions average-lines)
   (define interval (ceiling average-lines)) ; Average of the sizes of functions
-  (define max-value (apply max lst-functions)) ; The biggest function
-  (define min-value (apply min lst-functions)) ; The smallest function
-  (define limits (+ interval (/ (+ min-value max-value) 2))) ; Top limit
   
   (newline)
 
   ; Explanation of how we did the calculation for the grade
   (displayln "- Cohesion grading -")
-  (displayln "Formula for the calculation: average lines by function + ((biggest function + smallest function) / 2)")
+  (displayln "Formula for the calculation: average lines by function + 10")
   (displayln "and")
-  (displayln "((biggest function + smallest function) / 2) - average lines by function")
-  (displayln (format "= ~a + ((~a + ~a) / 2)  " interval max-value min-value))
-  (displayln (format "= ~a + ~a" interval (/ (+ max-value min-value) 2)))
-  (displayln (format "= [~a; ~a]" (- limits interval) limits))
-
+  (displayln "average lines by function - 10")
+  (displayln (format "[~a; ~a]" (- interval 10) (+ interval 10)))
+  
   (newline)
 
   ; Explaining why the percentage
@@ -130,7 +128,7 @@
     (lambda (item)
       (display (format "~a " item)) ; Display the number of lines of the function 
       (cond
-        [(and (>= item (- limits interval)) (<= item limits)) ; Conditional to see if it is cohesive
+        [(and (>= item (- interval 10)) (<= item (+ interval 10))) ; Conditional to see if it is cohesive
           (set! cohesive-functions (+ cohesive-functions 1))] ; Setting + 1 cohesive functions
         ))
     lst-functions)
@@ -223,16 +221,23 @@
               (new-open-parentesis (+ open-parentesis (count-open-parentesis line)))
               (new-close-parentesis (+ close-parentesis (count-close-parentesis line)))
               (has-comments (verify-comment line))
+              (has-tests (identify-tests line))
               ) ; Variables that verify if there is parentesis, or comments
               (cond
               [(and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) ; Verify if it is a call or variable
+                (identify-tests line)
                 (loop (add1 line-number) 0 0 0 (+ comments has-comments) number-of-functions sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
               ]
               [(and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis) (< 0 function-lines)) ; Verify if a function has ended
+                (identify-tests line)
                 (loop (add1 line-number) 0 0 0 (+ comments has-comments) (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
               ]
               [(not (or (and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis)))) ; Verify if it still in the function or it is a function
+                (identify-tests line)
                 (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis (+ comments has-comments) number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))
+              ]
+              [(= 1 (identify-tests line))
+                
               ]
               ))])))
 

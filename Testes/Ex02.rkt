@@ -1,21 +1,10 @@
 #lang racket
 
-; Insertion Sort Algorithm
-(define (insertion-sort lst)
-  (define (insert item sorted)
-    (cond
-     ((null? sorted) (list item))
-     ((<= item (car sorted)) (cons item sorted))
-     (else (cons (car sorted) (insert item (cdr sorted))))))
-  
-  (let loop ((lst lst)
-             (sorted '()))
-    (if (null? lst)
-        sorted
-        (loop (cdr lst) (insert (car lst) sorted)))))
+(require srfi/13)
 
-; Example usage
-(define lst-to-sort '(5 3 8 4 2 7 1 6))
+(define main-string "This is the main string.")
+(define substring-to-find "main")
 
-; Insertion Sort
-(displayln (format "Insertion Sort: ~a" (insertion-sort lst-to-sort)))
+(if (string-contains? main-string substring-to-find)
+    (displayln "Substring found!")
+    (displayln "Substring not found."))
