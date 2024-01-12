@@ -37,37 +37,34 @@
   (if (= 1 (count-char-occurrences #\; line)) 1 0)
   )
 
-; The grading system is a sum of 2 grades
-; The first grade is linked with the total size of the file and comments
-; The second grade is linked with the functions sizes and cohesion
-; The two grades goes from 1 to 5, 10 being the maximum grade
+; The grading system is a sum of 3 grades
+; The first grade is linked with the total size of the file and comments, from 1 to 4
+; The second grade is linked with the functions sizes and cohesion, from 1 to 3
+; The third grade is linked with the number of tests, from 1 to 3
 ; If the file has a error, it is a instant 0, since the code won't run
 
 ; Function that prints a table of the grading system for the comments
 (define (table-comments)
   (displayln "Grading comments table:")
-  (displayln "5: 25% - 29%")
-  (displayln "4: 20% - 24% or 30% - 34%")
-  (displayln "3: 15% - 19% or 35% - 39%")
-  (displayln "2: 10% - 14% or 40% - 44%")
-  (displayln "1:  0% -  9% or 45+%")
+  (displayln "4: 25% - 29%")
+  (displayln "3: 20% - 24% or 30% - 34%")
+  (displayln "2: 15% - 19% or 35% - 39%")
+  (displayln "1:      14-% or 44+%")
   )
 
 ; Function that prints a table of the grading system for the cohesion
 (define (table-cohesion)
   (displayln "Grading cohesion table:")
-  (displayln "5: 80% - 100%")
-  (displayln "4: 60% - 79%")
-  (displayln "3: 40% - 59%")
-  (displayln "2: 20% - 39%")
-  (displayln "1:  0% - 19%")
+  (displayln "3: 67% - 100%")
+  (displayln "2: 34% - 66%")
+  (displayln "1: 0% - 33%")
   )
 
 ; Function that grades the code by comments
 (define (comments-grade comments lines)
   (define grade 0) ; Variable that initializes the grade
-  (define percentage-comments (exact->inexact (* 100 (/ comments lines))) ; Formula to calculate the percentage of comments
-)
+  (define percentage-comments (exact->inexact (* 100 (/ comments lines)))) ; Formula to calculate the percentage of comments
+
   (newline)
 
   ; Explanation of how the grading is done 
@@ -84,18 +81,16 @@
   ; Conditionals for the grading
   (cond
     [(and (>= percentage-comments 25) (< percentage-comments 30))
-      (set! grade 5)]
-    [(or (and (>= percentage-comments 20) (< percentage-comments 25)) (and (>= percentage-comments 30) (< percentage-comments 35)))
       (set! grade 4)]
+    [(or (and (>= percentage-comments 20) (< percentage-comments 25)) (and (>= percentage-comments 30) (< percentage-comments 35)))
+      (set! grade 3)]
     [(or (and (>= percentage-comments 15) (< percentage-comments 20)) (and (>= percentage-comments 35) (< percentage-comments 40)))
-      (set! grade 3)]    
-    [(or (and (>= percentage-comments 10) (< percentage-comments 15)) (and (>= percentage-comments 40) (< percentage-comments 45)))
       (set! grade 2)]
     [else
       (set! grade 1)]
   )
 
-  (displayln (format "Comments grade: ~a of 5" grade)) ; Printing the final grade
+  (displayln (format "Comments grade: ~a of 4" grade)) ; Printing the final grade
   (set! final-grade (+ final-grade grade)) ; Setting in the final grade
 )
 
@@ -144,13 +139,9 @@
     
     ; Conditional of cohesion
     (cond
-      [(and (>= percentage-cohesion 80))
-        (set! grade 5)]
-      [(and (>= percentage-cohesion 60) (< percentage-cohesion 80))
-        (set! grade 4)]
-      [(and (>= percentage-cohesion 40) (< percentage-cohesion 60))
+      [(and (>= percentage-cohesion 67))
         (set! grade 3)]
-      [(and (>= percentage-cohesion 20) (< percentage-cohesion 40))
+      [(and (>= percentage-cohesion 34) (< percentage-cohesion 67))
         (set! grade 2)]
       [else (set! grade 1)]
       )
@@ -159,7 +150,7 @@
     (table-cohesion)
 
     ; Printing the grade and setting the grade
-    (displayln (format "Cohesion grade: ~a of 5" grade))
+    (displayln (format "Cohesion grade: ~a of 3" grade))
     (set! final-grade (+ final-grade grade))
   )
 )
