@@ -1,24 +1,16 @@
 #lang racket
 
-; Selection Sort Algorithm
-(define (selection-sort lst)
-  (define (find-min lst)
-    (if (null? (cdr lst))
-        lst
-        (let ((min-rest (find-min (cdr lst))))
-          (if (< (car min-rest) (car lst))
-              min-rest
-              lst))))
-  
-  (let loop ((lst lst)
-             (sorted '()))
-    (if (null? lst)
-        sorted
-        (let ((min (find-min lst)))
-          (loop (remove min lst) (cons (car min) sorted))))))
+(define (check-type value)
+  (cond
+    ((list? value) (displayln "It's a list."))
+    ((number? value) (displayln "It's a number."))
+    (else (displayln "It's neither a list nor a number."))))
 
 ; Example usage
-(define lst-to-sort '(5 3 8 4 2 7 1 6))
+(define example-list '(1 2 3))
+(define example-number 42)
+(define example-string "Hello")
 
-; Selection Sort
-(displayln (format "Selection Sort: ~a" (selection-sort lst-to-sort)))
+(check-type example-list)   ; Output: It's a list.
+(check-type example-number) ; Output: It's a number.
+(check-type example-string) ; Output: It's neither a list nor a number.

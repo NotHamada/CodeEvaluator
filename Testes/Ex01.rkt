@@ -52,12 +52,24 @@
   (displayln "1:      14-% or 44+%")
   )
 
+; Function that prints a table of the grading system for the tests
+(define (table-tests)
+  (displayln "Grading tests table:")
+  (displayln "3: 2 - 5")
+  (displayln "2: 6+")
+  (displayln "1: 0 - 1")
+  )
+
 ; Function that prints a table of the grading system for the cohesion
 (define (table-cohesion)
-  (displayln "Grading cohesion table:")
+  (displayln "Grading cohesion table for more than 1 function:")
   (displayln "3: 67% - 100%")
   (displayln "2: 34% - 66%")
   (displayln "1: 0% - 33%")
+  (displayln "Grading cohesion table for 1 function only:")
+  (displayln "3: 19-")
+  (displayln "2: 20 - 29")
+  (displayln "1: 30+")
   )
 
 ; Function that grades the code by comments
@@ -112,12 +124,37 @@
   ; Explaining why the percentage
   (displayln "To reach the percentages, we get the functions there are in the interval.")
   (displayln "Then we do: number of (cohesive functions / total functions) * 100")
+  (displayln "If there is only one function, the formula is different")
 
   (newline)
 
-  ; Iterate each one of the functions to see if they are cohesive
+  (cohesion-filter lst-functions interval)
+)
+
+; Does the calcultion for cohesion
+(define (cohesion-filter lst interval)
   (let ((cohesive-functions 0)
-        (grade 0))
+        (grade 0)) 
+    (cond 
+    [(= 1 (length lst)) ; If there is only one function
+      (cond
+        [(>= (car lst) 30)
+          (set! grade 1)
+          (set! final-grade (+ final-grade 1))]
+        [(and (< (car lst) 30) (> (car lst) 20))
+          (set! grade 2)
+          (set! final-grade (+ final-grade 2))]
+        [else
+          (set! grade 3)
+          (set! final-grade (+ final-grade 3))]
+      )
+      (displayln (format "Function lines: ~a" (car lst))) ; Display the number of lines of the function 
+
+      (table-cohesion)
+
+      (displayln (format "Cohesion grade: ~a of 3" grade))
+    ]
+    [else 
     (display "Function lines: ")
     (for-each
     (lambda (item)
@@ -126,16 +163,16 @@
         [(and (>= item (- interval 10)) (<= item (+ interval 10))) ; Conditional to see if it is cohesive
           (set! cohesive-functions (+ cohesive-functions 1))] ; Setting + 1 cohesive functions
         ))
-    lst-functions)
+    lst)
 
     ; Getting the percentage
-    (define percentage-cohesion (exact->inexact (* 100 (/ cohesive-functions (length lst-functions)))))
+    (define percentage-cohesion (exact->inexact (* 100 (/ cohesive-functions (length lst)))))
 
     (newline)
 
     ; Printing the percentage and the number of cohesive functions
     (displayln (format "Number of cohesive functions: ~a" cohesive-functions))
-    (displayln (format "Percentage: ~a / ~a = ~a %" cohesive-functions (length lst-functions) percentage-cohesion))
+    (displayln (format "Percentage: ~a / ~a = ~a %" cohesive-functions (length lst) percentage-cohesion))
     
     ; Conditional of cohesion
     (cond
@@ -151,9 +188,35 @@
 
     ; Printing the grade and setting the grade
     (displayln (format "Cohesion grade: ~a of 3" grade))
-    (set! final-grade (+ final-grade grade))
-  )
-)
+    (set! final-grade (+ final-grade grade))]
+  )))
+
+; Function that grades the code by tests
+(define (tests-grade number-of-tests number-of-functions)
+  (let ((grade 0)
+        (average (exact->inexact (/ number-of-tests number-of-functions))))
+    
+    (newline)
+    
+    (displayln "- Tests grading -")
+    (displayln "Formula for the calculation: tests / number of functions" )
+    (displayln (format "= ~a / ~a" number-of-tests number-of-functions))
+    (displayln (format "= ~a" (exact->inexact (/ number-of-tests number-of-functions))))
+
+    (cond 
+      [(and (>= average 2) (<= average 5))
+        (set! grade 3)]
+      [(>= average 6)
+        (set! grade 2)]
+      [else (set! grade 1)]
+    )
+
+    (newline)
+    (table-tests) ; Calls the table
+
+    (displayln (format "Comments grade: ~a of 3" grade)) ; Printing the final grade
+    (set! final-grade (+ final-grade grade)) ; Setting in the final grade
+  ))
 
 ; Function that calculates the grade of the code
 (define (calculate lst)
@@ -164,16 +227,19 @@
   (define sum-function-lines (car (cdddr lst)))
   (define variables (car (cddddr lst)))
   (define lst-functions (car (cdr (cddddr lst))))
+  (define tests (car (cddr (cddddr lst))))
   (define average-lines (exact->inexact (/ sum-function-lines functions)))
 
   (displayln (format "Average lines per function: ~a" average-lines)) ; Average lines per function
   (displayln (format "Variables and calls: ~a" variables)) ; How many calls and variables
   (displayln (format "Comments: ~a" comments)) ; Number of comments
   (displayln (format "Total lines: ~a" lines)) ; Total lines of the file
-  (displayln (format "Total functions: ~a" functions)) ; And the number of functions
+  (displayln (format "Total functions: ~a" functions)) ; Number of functions
+  (displayln (format "Total tests ~a" tests)) ; And the number of tests
 
   (comments-grade comments lines) ; Calls the comments grading system
   (cohesion-grade lst-functions average-lines) ; Calls the cohesion grading system
+  (tests-grade tests functions) ; Calls the tests grading system
 
   (newline)
 
@@ -191,6 +257,7 @@
              (close-parentesis 0)
              (comments 0)
              (number-of-functions 0)
+             (number-of-tests 0)
              (sum-function-lines 0)
              (variables 0)
              (lst-function-lines (list))
@@ -203,10 +270,10 @@
       ]
       [(and (eof-object? line) (not (eq? line (current-input-port)))) ; File ended
        (close-input-port input-port)
-       (calculate (list comments line-number number-of-functions sum-function-lines variables lst-function-lines))
+       (calculate (list comments line-number number-of-functions sum-function-lines variables lst-function-lines number-of-tests))
       ]
       [(is-empty-line? line) ; Line is empty
-       (loop line-number function-lines open-parentesis close-parentesis comments number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))]
+       (loop line-number function-lines open-parentesis close-parentesis comments number-of-functions number-of-tests sum-function-lines variables lst-function-lines (read-line input-port))]
       [(not (eq? line (current-input-port))) ; Line not empty, so we have another cond inside to verify some conditions 
        (let (
               (new-open-parentesis (+ open-parentesis (count-open-parentesis line)))
@@ -217,18 +284,15 @@
               (cond
               [(and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) ; Verify if it is a call or variable
                 (identify-tests line)
-                (loop (add1 line-number) 0 0 0 (+ comments has-comments) number-of-functions sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
+                (loop (add1 line-number) 0 0 0 (+ comments has-comments) number-of-functions (+ number-of-tests has-tests) sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
               ]
               [(and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis) (< 0 function-lines)) ; Verify if a function has ended
                 (identify-tests line)
-                (loop (add1 line-number) 0 0 0 (+ comments has-comments) (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
+                (loop (add1 line-number) 0 0 0 (+ comments has-comments) (add1 number-of-functions) (+ number-of-tests has-tests) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
               ]
               [(not (or (and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis)))) ; Verify if it still in the function or it is a function
                 (identify-tests line)
-                (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis (+ comments has-comments) number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))
-              ]
-              [(= 1 (identify-tests line))
-                
+                (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis (+ comments has-comments) number-of-functions (+ number-of-tests has-tests) sum-function-lines variables lst-function-lines (read-line input-port))
               ]
               ))])))
 
