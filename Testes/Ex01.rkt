@@ -62,11 +62,11 @@
 
 ; Function that prints a table of the grading system for the cohesion
 (define (table-cohesion)
-  (displayln "Grading cohesion table for more than 1 function:")
+  (displayln "Grading cohesion table for more than 1 function:") ; For many functions
   (displayln "3: 67% - 100%")
   (displayln "2: 34% - 66%")
   (displayln "1: 0% - 33%")
-  (displayln "Grading cohesion table for 1 function only:")
+  (displayln "Grading cohesion table for 1 function only:") ; For one function
   (displayln "3: 19-")
   (displayln "2: 20 - 29")
   (displayln "1: 30+")
@@ -197,12 +197,13 @@
         (average (exact->inexact (/ number-of-tests number-of-functions))))
     
     (newline)
-    
+
     (displayln "- Tests grading -")
     (displayln "Formula for the calculation: tests / number of functions" )
     (displayln (format "= ~a / ~a" number-of-tests number-of-functions))
     (displayln (format "= ~a" (exact->inexact (/ number-of-tests number-of-functions))))
 
+    ; Conditionals
     (cond 
       [(and (>= average 2) (<= average 5))
         (set! grade 3)]
