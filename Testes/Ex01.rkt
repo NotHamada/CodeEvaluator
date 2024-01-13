@@ -9,6 +9,9 @@
 (define (is-empty-line? line)
   (string=? "" (string-trim line)))
 
+(define (identify-tests line)
+  (if (string-contains? line "check-") 1 0))
+
 ; Function that count the number of occurrences of a specific char in a string
 (define (count-char-occurrences char str)
   (define (count-helper char str count) ; Variable that has the number of occurrences of the char
@@ -34,37 +37,34 @@
   (if (= 1 (count-char-occurrences #\; line)) 1 0)
   )
 
-; The grading system is a sum of 2 grades
-; The first grade is linked with the total size of the file and comments
-; The second grade is linked with the functions sizes and cohesion
-; The two grades goes from 1 to 5, 10 being the maximum grade
+; The grading system is a sum of 3 grades
+; The first grade is linked with the total size of the file and comments, from 1 to 4
+; The second grade is linked with the functions sizes and cohesion, from 1 to 3
+; The third grade is linked with the number of tests, from 1 to 3
 ; If the file has a error, it is a instant 0, since the code won't run
 
 ; Function that prints a table of the grading system for the comments
 (define (table-comments)
   (displayln "Grading comments table:")
-  (displayln "5: 25% - 29%")
-  (displayln "4: 20% - 24% or 30% - 34%")
-  (displayln "3: 15% - 19% or 35% - 39%")
-  (displayln "2: 10% - 14% or 40% - 44%")
-  (displayln "1:  0% -  9% or 45+%")
+  (displayln "4: 25% - 29%")
+  (displayln "3: 20% - 24% or 30% - 34%")
+  (displayln "2: 15% - 19% or 35% - 39%")
+  (displayln "1:      14-% or 44+%")
   )
 
 ; Function that prints a table of the grading system for the cohesion
 (define (table-cohesion)
   (displayln "Grading cohesion table:")
-  (displayln "5: 80% - 100%")
-  (displayln "4: 60% - 79%")
-  (displayln "3: 40% - 59%")
-  (displayln "2: 20% - 39%")
-  (displayln "1:  0% - 19%")
+  (displayln "3: 67% - 100%")
+  (displayln "2: 34% - 66%")
+  (displayln "1: 0% - 33%")
   )
 
 ; Function that grades the code by comments
 (define (comments-grade comments lines)
   (define grade 0) ; Variable that initializes the grade
-  (define percentage-comments (exact->inexact (* 100 (/ comments lines))) ; Formula to calculate the percentage of comments
-)
+  (define percentage-comments (exact->inexact (* 100 (/ comments lines)))) ; Formula to calculate the percentage of comments
+
   (newline)
 
   ; Explanation of how the grading is done 
@@ -81,39 +81,32 @@
   ; Conditionals for the grading
   (cond
     [(and (>= percentage-comments 25) (< percentage-comments 30))
-      (set! grade 5)]
-    [(or (and (>= percentage-comments 20) (< percentage-comments 25)) (and (>= percentage-comments 30) (< percentage-comments 35)))
       (set! grade 4)]
+    [(or (and (>= percentage-comments 20) (< percentage-comments 25)) (and (>= percentage-comments 30) (< percentage-comments 35)))
+      (set! grade 3)]
     [(or (and (>= percentage-comments 15) (< percentage-comments 20)) (and (>= percentage-comments 35) (< percentage-comments 40)))
-      (set! grade 3)]    
-    [(or (and (>= percentage-comments 10) (< percentage-comments 15)) (and (>= percentage-comments 40) (< percentage-comments 45)))
       (set! grade 2)]
     [else
       (set! grade 1)]
   )
 
-  (displayln (format "Comments grade: ~a of 5" grade)) ; Printing the final grade
+  (displayln (format "Comments grade: ~a of 4" grade)) ; Printing the final grade
   (set! final-grade (+ final-grade grade)) ; Setting in the final grade
 )
 
 ; Function that grades the code by cohesion
 (define (cohesion-grade lst-functions average-lines)
   (define interval (ceiling average-lines)) ; Average of the sizes of functions
-  (define max-value (apply max lst-functions)) ; The biggest function
-  (define min-value (apply min lst-functions)) ; The smallest function
-  (define limits (+ interval (/ (+ min-value max-value) 2))) ; Top limit
   
   (newline)
 
   ; Explanation of how we did the calculation for the grade
   (displayln "- Cohesion grading -")
-  (displayln "Formula for the calculation: average lines by function + ((biggest function + smallest function) / 2)")
+  (displayln "Formula for the calculation: average lines by function + 10")
   (displayln "and")
-  (displayln "((biggest function + smallest function) / 2) - average lines by function")
-  (displayln (format "= ~a + ((~a + ~a) / 2)  " interval max-value min-value))
-  (displayln (format "= ~a + ~a" interval (/ (+ max-value min-value) 2)))
-  (displayln (format "= [~a; ~a]" (- limits interval) limits))
-
+  (displayln "average lines by function - 10")
+  (displayln (format "[~a; ~a]" (- interval 10) (+ interval 10)))
+  
   (newline)
 
   ; Explaining why the percentage
@@ -130,7 +123,7 @@
     (lambda (item)
       (display (format "~a " item)) ; Display the number of lines of the function 
       (cond
-        [(and (>= item (- limits interval)) (<= item limits)) ; Conditional to see if it is cohesive
+        [(and (>= item (- interval 10)) (<= item (+ interval 10))) ; Conditional to see if it is cohesive
           (set! cohesive-functions (+ cohesive-functions 1))] ; Setting + 1 cohesive functions
         ))
     lst-functions)
@@ -146,13 +139,9 @@
     
     ; Conditional of cohesion
     (cond
-      [(and (>= percentage-cohesion 80))
-        (set! grade 5)]
-      [(and (>= percentage-cohesion 60) (< percentage-cohesion 80))
-        (set! grade 4)]
-      [(and (>= percentage-cohesion 40) (< percentage-cohesion 60))
+      [(and (>= percentage-cohesion 67))
         (set! grade 3)]
-      [(and (>= percentage-cohesion 20) (< percentage-cohesion 40))
+      [(and (>= percentage-cohesion 34) (< percentage-cohesion 67))
         (set! grade 2)]
       [else (set! grade 1)]
       )
@@ -161,7 +150,7 @@
     (table-cohesion)
 
     ; Printing the grade and setting the grade
-    (displayln (format "Cohesion grade: ~a of 5" grade))
+    (displayln (format "Cohesion grade: ~a of 3" grade))
     (set! final-grade (+ final-grade grade))
   )
 )
@@ -223,16 +212,23 @@
               (new-open-parentesis (+ open-parentesis (count-open-parentesis line)))
               (new-close-parentesis (+ close-parentesis (count-close-parentesis line)))
               (has-comments (verify-comment line))
+              (has-tests (identify-tests line))
               ) ; Variables that verify if there is parentesis, or comments
               (cond
               [(and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) ; Verify if it is a call or variable
+                (identify-tests line)
                 (loop (add1 line-number) 0 0 0 (+ comments has-comments) number-of-functions sum-function-lines (add1 variables) lst-function-lines (read-line input-port)) 
               ]
               [(and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis) (< 0 function-lines)) ; Verify if a function has ended
+                (identify-tests line)
                 (loop (add1 line-number) 0 0 0 (+ comments has-comments) (add1 number-of-functions) (+ sum-function-lines (add1 function-lines)) variables (append lst-function-lines (list (add1 function-lines))) (read-line input-port))
               ]
               [(not (or (and (= new-open-parentesis new-close-parentesis) (= function-lines 0)) (and (= new-open-parentesis new-close-parentesis) (< 0 new-open-parentesis) (< 0 new-close-parentesis)))) ; Verify if it still in the function or it is a function
+                (identify-tests line)
                 (loop (add1 line-number) (+ function-lines 1) new-open-parentesis new-close-parentesis (+ comments has-comments) number-of-functions sum-function-lines variables lst-function-lines (read-line input-port))
+              ]
+              [(= 1 (identify-tests line))
+                
               ]
               ))])))
 
