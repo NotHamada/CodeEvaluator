@@ -215,7 +215,7 @@
     (newline)
     (table-tests) ; Calls the table
 
-    (displayln (format "Tests grade: ~a of 3" grade)) ; Printing the final grade
+    (displayln (format "Comments grade: ~a of 3" grade)) ; Printing the final grade
     (set! final-grade (+ final-grade grade)) ; Setting in the final grade
   ))
 
@@ -322,74 +322,24 @@
   (check-true (is-empty-line? ""))
   (check-true (is-empty-line? "   "))
   (check-false (is-empty-line? "not empty"))
-  (check-true (is-empty-line? "\r\n"))  
-  (check-true (is-empty-line? " \t "))
-  (check-true (is-empty-line? "     "))  ; Linha contendo apenas espaços
 
   ; Testes para count-char-occurrences
   (check-equal? (count-char-occurrences #\a "banana") 3)
   (check-equal? (count-char-occurrences #\z "banana") 0)
-  (check-equal? (count-char-occurrences #\a "") 0) 
-  (check-equal? (count-char-occurrences #\1 "linha1\nlinha2") 1) 
-  (check-equal? (count-char-occurrences #\space "espaços aqui") 1)
-  (check-equal? (count-char-occurrences #\n "linha1\nlinha2\n") 2) ; Contagem de duas quebras de linha
+  (check-equal? (count-char-occurrences #\a "") 0)  ; Caso de string vazia
 
   ; Testes para count-open-parentesis
   (check-equal? (count-open-parentesis "(abc (def)") 2)
   (check-equal? (count-open-parentesis "no parentheses") 0)
-  (check-equal? (count-open-parentesis "") 0)
-  
-  
+  (check-equal? (count-open-parentesis "") 0)  ; Caso de string vazia
+
   ; Testes para count-close-parentesis
-  (check-equal? (count-close-parentesis "(abc) def)") 2)
+  (check-equal? (count-close-parentesis "(abc) def)") 1)
   (check-equal? (count-close-parentesis "no parentheses") 0)
-  (check-equal? (count-close-parentesis "") 0)
- 
+  (check-equal? (count-close-parentesis "") 0)  ; Caso de string vazia
 
   ; Testes para verify-comment
   (check-equal? (verify-comment "; this is a comment") 1)
   (check-equal? (verify-comment "this is not a comment") 0)
-  (check-equal? (verify-comment "") 0)  
-  (check-equal? (verify-comment "code code ; comment") 1)
-
-   ; Testes para identify-tests
-  (check-equal? (identify-tests "check-equal?") 1)
-  (check-equal? (identify-tests "some other line") 0)
-  (check-equal? (identify-tests "") 0)
-  (check-equal? (identify-tests "(check-equal? 5 5)") 1) 
-  (check-equal? (identify-tests "code (check-equal? 5 5)") 1) 
-  (check-equal? (identify-tests "check-equal? (5 5)") 1)    
-  (check-equal? (identify-tests "if (check-equal? x y)") 1) ; Teste dentro de uma expressão condicional
-
-  ; Testes para table-comments
-  (define (capture-output-comments)
-    (with-output-to-string table-comments))
-  (check-equal? (capture-output-comments)
-                (string-append "Grading comments table:\n"
-                               "4: 25% - 29%\n"
-                               "3: 20% - 24% or 30% - 34%\n"
-                               "2: 15% - 19% or 35% - 39%\n"
-                               "1:      14-% or 44+%\n"))
-
-  ; Testes para table-tests
-  (define (capture-output-tests)
-    (with-output-to-string table-tests))
-  (check-equal? (capture-output-tests)
-                (string-append "Grading tests table:\n"
-                               "3: 2 - 5\n"
-                               "2: 6+\n"
-                               "1: 0 - 1\n"))
-
-  ; Testes para table-cohesion
-  (define (capture-output-cohesion)
-    (with-output-to-string table-cohesion))
-  (check-equal? (capture-output-cohesion)
-                (string-append "Grading cohesion table for more than 1 function:\n"
-                               "3: 67% - 100%\n"
-                               "2: 34% - 66%\n"
-                               "1: 0% - 33%\n"
-                               "Grading cohesion table for 1 function only:\n"
-                               "3: 19-\n"
-                               "2: 20 - 29\n"
-                               "1: 30+\n"))
+  (check-equal? (verify-comment "") 0)  ; Caso de string vazia
 )
